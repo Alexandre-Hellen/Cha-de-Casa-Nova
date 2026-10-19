@@ -201,90 +201,90 @@ section.card p { font-size: 16px; line-height: 1.55; color: #f2f0ea; }
 
 <script>
 // ===== CONFIGURAÇÃO DO FIREBASE =====
-// Cole aqui a URL do seu Realtime Database (sem barra no final), ex.:
-// "https://casa-nova-alexandre-hellen-default-rtdb.firebaseio.com"
 const DB_URL="https://chacasanova-38d50-default-rtdb.firebaseio.com";
 // =====================================
 const NUM={h:"5547989164472",a:"5541988261312"};
 const dlg=document.getElementById('dlg'),nm=document.getElementById('nm'),dq=document.getElementById('dq');
-let msg=null,pre=null;
+const dg=document.getElementById('dg'),dgq=document.getElementById('dgq');
+let msg=null,pre=null,dgfn=null,GIFTS={},LOADED=false;
 const key=n=>n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-const getMine=()=>{try{return JSON.parse(localStorage.getItem('mine')||'[]')}catch(e){return[]}};
-const setMine=a=>{try{localStorage.setItem('mine',JSON.stringify(a))}catch(e){}};
-const db=async(path,opt)=>{const r=await fetch(DB_URL+path+'.json',opt);if(!r.ok)throw new Error(r.status);return r.json()};
-async function refresh(){
- if(!DB_URL)return;
- let g={};
- try{g=await db('/gifts')||{}}
- catch(e){
-   document.querySelectorAll('.gift').forEach(a=>{
-     let st=a.querySelector('.status');
-     if(!st){st=document.createElement('small');st.className='status';a.querySelector('.t').appendChild(st)}
-     st.textContent='Status indisponível';
-   });
-   return;
- }
- const mine=getMine();
- const dg=document.getElementById('dg'),dgq=document.getElementById('dgq');let dgfn=null;
- const confirmGift=(q,fn)=>{dgq.textContent=q;dgfn=fn;dg.showModal()};
- document.getElementById('dgno').onclick=()=>dg.close();
- document.getElementById('dgok').onclick=async()=>{dg.close();if(dgfn)await dgfn()};
- const countReservations=raw=>!raw?0:(Array.isArray(raw)?raw.length:(typeof raw==='object'?Object.keys(raw).length:1));
+// reservas deste aparelho: {chave-do-presente: token}
+let TOK={};
+try{TOK=JSON.parse(localStorage.getItem('mineTok')||'{}');JSON.parse(localStorage.getItem('mine')||'[]').forEach(k=>{if(!(k in TOK))TOK[k]=null})}catch(e){}
+const saveTok=()=>{try{localStorage.setItem('mineTok',JSON.stringify(TOK))}catch(e){}};
+const db=async(path,opt)=>{const r=await fetch(DB_URL+path+'.json',Object.assign({cache:'no-store'},opt||{}));if(!r.ok)throw new Error(r.status);return r.json()};
+const count=raw=>!raw?0:(Array.isArray(raw)?raw.length:(typeof raw==='object'?Object.keys(raw).length:1));
+const statusEl=a=>{let st=a.querySelector('.status');if(!st){st=document.createElement('small');st.className='status';a.querySelector('.t').appendChild(st)}return st};
+
+function render(){
  document.querySelectorAll('.gift').forEach(a=>{
-   const n=a.dataset.n,k=key(n),limit=Math.max(1,parseInt(a.dataset.limit||'1',10));
-   let st=a.querySelector('.status');
-   if(!st){st=document.createElement('small');st.className='status';a.querySelector('.t').appendChild(st)}
-   a.classList.remove('taken','mine');
-   const count=countReservations(g[k]);
-   if(mine.includes(k)){
-     a.classList.add('mine');st.textContent='✓ Você selecionou este presente';a.querySelector('.tag').textContent='selecionado';
-   }else if(count>=limit){
-     a.classList.add('taken');st.textContent='✓ Limite atingido ('+count+'/'+limit+')';a.querySelector('.tag').textContent='esgotado';
-   }else{
-     st.textContent='Disponível ('+count+'/'+limit+')';a.querySelector('.tag').textContent='escolher';
-   }
-   if(a.dataset.bound==='1')return;
-   a.dataset.bound='1';
-   a.addEventListener('click',e=>{
-     e.preventDefault();
-     if(a.classList.contains('taken')&&!a.classList.contains('mine')){alert('Esse presente já atingiu o limite de reservas 💛 Escolha outro, por favor!');return}
-     if(a.classList.contains('mine')){
-       confirmGift('Desfazer sua escolha de "'+n+'"?',async()=>{
-         try{
-           const latest=await db('/gifts/'+k);
-           if(latest && typeof latest==='object' && !Array.isArray(latest)){
-             const ids=Object.keys(latest);
-             if(ids.length>1) await db('/gifts/'+k+'/'+ids[ids.length-1],{method:'DELETE'});
-             else await db('/gifts/'+k,{method:'DELETE'});
-           }else await db('/gifts/'+k,{method:'DELETE'});
-           setMine(getMine().filter(x=>x!==k));
-         }catch(err){alert('Não consegui desfazer agora. Tente de novo.')}
-         refresh()
-       });
-       return;
-     }
-     confirmGift('Você vai nos presentear com: '+n+'?',async()=>{
-       try{
-         const latest=await db('/gifts/'+k);
-         if(countReservations(latest)>=limit){alert('Esse presente acabou de atingir o limite de reservas 😅 Escolha outro, por favor!');refresh();return}
-         const token=Math.random().toString(36).slice(2)+Date.now().toString(36);
-         await db('/gifts/'+k+'/'+token,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'reservado',at:Date.now()})});
-         setMine(getMine().concat(k));alert('Pronto! Reservamos "'+n+'" para você 💛 Obrigado!');
-       }catch(err){alert('Não foi possível reservar agora. Tente de novo.')}
-       refresh()
-     });
-   });
+  const k=key(a.dataset.n),limit=Math.max(1,parseInt(a.dataset.limit||'1',10)),st=statusEl(a),tag=a.querySelector('.tag');
+  const c=count(GIFTS[k]);
+  a.classList.remove('taken','mine');
+  if(!LOADED){st.textContent='Verificando…';return}
+  if(k in TOK){a.classList.add('mine');st.textContent='✓ Você selecionou este presente';tag.textContent='selecionado'}
+  else if(c>=limit){a.classList.add('taken');st.textContent='✓ Limite atingido ('+c+'/'+limit+')';tag.textContent='esgotado'}
+  else{st.textContent='Disponível ('+c+'/'+limit+')';tag.textContent='escolher'}
  });
- document.getElementById('rsvp').onclick=e=>{e.preventDefault();
-  ask('Confirmar presença no chá de casa nova?',n=>"Oi! Aqui é "+n+". Confirmo minha presença no chá de casa nova dia 22/11 às 14h 🎉",
-   async name=>{if(DB_URL){try{await db('/rsvp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(name)})}catch(e){}}return true})};
- document.getElementById('no').onclick=()=>dlg.close();
- const send=async k=>{const v=nm.value.trim();if(!v){nm.focus();return}
-  if(pre&&!(await pre(v)))return;
-  location.href="https://wa.me/"+NUM[k]+"?text="+encodeURIComponent(msg(v))};
- document.getElementById('sh').onclick=()=>send('h');
- document.getElementById('sa').onclick=()=>send('a');
 }
+async function refresh(){
+ try{GIFTS=await db('/gifts')||{};LOADED=true}
+ catch(e){document.querySelectorAll('.gift').forEach(a=>{statusEl(a).textContent='Status indisponível'});return}
+ render();
+}
+
+const confirmGift=(q,fn)=>{dgq.textContent=q;dgfn=fn;dg.showModal()};
+document.getElementById('dgno').onclick=()=>dg.close();
+document.getElementById('dgok').onclick=async()=>{dg.close();if(dgfn)await dgfn()};
+
+document.querySelectorAll('.gift').forEach(a=>a.addEventListener('click',e=>{
+ e.preventDefault();
+ const n=a.dataset.n,k=key(n),limit=Math.max(1,parseInt(a.dataset.limit||'1',10));
+ if(a.classList.contains('mine')){
+  confirmGift('Desfazer sua escolha de "'+n+'"?',async()=>{
+   try{
+    const t=TOK[k];
+    if(t)await db('/gifts/'+k+'/'+t,{method:'DELETE'});
+    else{const latest=await db('/gifts/'+k);
+     if(latest&&typeof latest==='object'){const ids=Object.keys(latest);if(ids.length>1)await db('/gifts/'+k+'/'+ids[ids.length-1],{method:'DELETE'});else await db('/gifts/'+k,{method:'DELETE'})}
+     else await db('/gifts/'+k,{method:'DELETE'})}
+    delete TOK[k];saveTok();
+    if(GIFTS[k]&&typeof GIFTS[k]==='object'){delete GIFTS[k][t]}else delete GIFTS[k];
+    render();
+   }catch(err){alert('Não consegui desfazer agora. Tente de novo.')}
+   refresh()});
+  return}
+ if(a.classList.contains('taken')){alert('Esse presente já atingiu o limite de reservas 💛 Escolha outro, por favor!');return}
+ confirmGift('Você vai nos presentear com: '+n+'?',async()=>{
+  let ok=false;
+  try{
+   const latest=await db('/gifts/'+k);
+   if(count(latest)>=limit){GIFTS[k]=latest;render();alert('Esse presente acabou de atingir o limite de reservas 😅 Escolha outro, por favor!');return}
+   const token=Math.random().toString(36).slice(2)+Date.now().toString(36);
+   const val={name:'reservado',at:Date.now()};
+   await db('/gifts/'+k+'/'+token,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(val)});
+   TOK[k]=token;saveTok();
+   if(!GIFTS[k]||typeof GIFTS[k]!=='object')GIFTS[k]={};
+   GIFTS[k][token]=val;ok=true;
+   render();
+  }catch(err){alert('Não foi possível reservar agora. Tente de novo.')}
+  if(ok)alert('Pronto! Reservamos "'+n+'" para você 💛 Obrigado!');
+  refresh()});
+}));
+
+function ask(q,fn,p){dq.textContent=q;msg=fn;pre=p||null;nm.value='';dlg.showModal()}
+document.getElementById('rsvp').addEventListener('click',e=>{e.preventDefault();
+ ask('Confirmar presença no chá de casa nova?',n=>"Oi! Aqui é "+n+". Confirmo minha presença no chá de casa nova dia 22/11 às 14h 🎉",
+  name=>{try{fetch(DB_URL+'/rsvp.json',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify(name)}).catch(()=>{})}catch(e){}})});
+document.getElementById('no').onclick=()=>dlg.close();
+const send=k=>{const v=nm.value.trim();if(!v){nm.focus();return}
+ if(pre)pre(v);
+ location.href="https://wa.me/"+NUM[k]+"?text="+encodeURIComponent(msg(v))};
+document.getElementById('sh').onclick=()=>send('h');
+document.getElementById('sa').onclick=()=>send('a');
+render();
+setInterval(refresh,20000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
 const pixButton=document.getElementById('copypix');
 if(pixButton)pixButton.onclick=async()=>{
  const keyText=document.getElementById('pixkey').textContent.trim();
