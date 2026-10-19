@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chá de Casa Nova – Alexandre e Hellen</title>
+<link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Patrick+Hand&family=Caveat:wght@600&family=Caveat+Brush&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1d1f20;--card:#26292a;--chalk:#f2f0ea;--gold:#e3c88f;--mint:#8fc9bd;--dim:#9a9a94;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1f20}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--chalk);font-family:'Patrick Hand',cursive,sans-serif;font-size:19px;line-height:1.35;background-image:radial-gradient(circle at 20% 10%,#2c2f30,transparent 60%)}
+.wrap{max-width:460px;margin:0 auto;padding:18px 16px 40px}
+.card{border:3px solid #ffffff22;border-radius:22px;background:var(--bg);padding:28px 20px;text-align:center;position:relative;overflow:hidden}
+.card:before,.card:after{content:"";position:absolute;width:90px;height:90px;background:repeating-linear-gradient(45deg,#ffffff55 0 2px,transparent 2px 6px);opacity:.5}
+.card:before{top:-30px;left:-30px;transform:rotate(0)}.card:after{bottom:-30px;right:-30px}
+svg{max-width:100%}
+h1{font-family:'Caveat Brush','Marker Felt',cursive;font-weight:400;font-synthesis:none;-webkit-text-size-adjust:100%;font-size:60px;line-height:1.05;margin:10px 0 0;letter-spacing:1px;text-transform:none;padding-top:4px}
+.sub{font-family:'Amatic SC';font-size:26px;letter-spacing:4px;color:var(--mint)}
+.ribbon{margin:14px -8px;padding:10px 6px;border:2px solid var(--gold);color:var(--gold);font-family:'Amatic SC';font-size:40px;letter-spacing:2px;text-transform:uppercase;transform:rotate(-2deg)}
+.msg{margin:18px 6px 6px}.msg b{color:var(--gold);font-weight:400}
+hr{border:0;border-top:2px dashed var(--mint);width:50%;margin:16px auto}
+.when{display:flex;justify-content:center;align-items:center;gap:14px;font-family:'Amatic SC';font-size:44px;line-height:1;color:var(--mint)}
+.when i{width:2px;height:60px;background:var(--gold)}
+.addr{color:var(--gold);margin-top:14px}
+.wave{height:10px;margin:12px 0;background:radial-gradient(circle at 5px 0,transparent 5px,var(--mint) 5px 7px,transparent 7px) 0 0/10px 10px repeat-x}
+.btn{display:inline-block;margin-top:14px;padding:10px 22px;border:2px solid var(--chalk);border-radius:30px;color:var(--chalk);text-decoration:none;font-family:inherit;font-size:20px;background:none;cursor:pointer}
+.btn:active{background:#ffffff22}
+h2{font-family:'Caveat Brush','Marker Felt',cursive;font-weight:400;font-synthesis:none;font-size:42px;line-height:1.1;text-align:center;margin:34px 0 4px;color:var(--gold);letter-spacing:1px}
+.note{text-align:center;color:var(--dim);font-size:17px;margin:0 0 14px}
+.grid h3{font-family:'Amatic SC';font-size:36px;color:var(--mint);margin:18px 0 0;letter-spacing:2px}.gift .e{font-size:24px}.grid{display:grid;gap:10px}
+.gift{text-decoration:none;display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid #ffffff33;border-radius:14px;background:var(--card);cursor:pointer;text-align:left;color:var(--chalk);font:inherit;width:100%}
+.gift .e{font-size:30px}.gift .t{flex:1}.gift small{display:block;color:var(--mint);font-size:15px}
+.gift.taken{opacity:.55;border-style:dashed;cursor:default}
+.gift.mine{opacity:1;border-color:var(--gold);cursor:pointer}
+.gift .tag{font-size:14px;color:var(--gold);white-space:nowrap}.gift .status{display:block;font-size:14px;color:var(--mint);margin-top:3px}.gift.taken .status{color:#e6a3a3}.gift.mine .status{color:var(--gold)}
+dialog{background:var(--card);color:var(--chalk);border:2px solid var(--gold);border-radius:18px;font:inherit;max-width:340px;width:90%}
+dialog::backdrop{background:#000a}
+input{width:100%;padding:10px;margin:10px 0;border-radius:10px;border:2px solid var(--mint);background:var(--bg);color:var(--chalk);font:inherit;font-size:20px}
+.row{display:flex;gap:8px;justify-content:flex-end}
+#st{text-align:center;color:var(--dim);font-size:16px;margin-top:10px}
+
+/* Melhorias de leitura na lista e na área do Pix */
+.grid, .gift, .gift .t, .gift .tag, .gift .status, .gift small,
+.note, #st, #pixkey, #pixstatus, #copypix, section.card p {
+  font-family: Arial, Helvetica, sans-serif;
+}
+.note { color: #d2d2cc; font-size: 15px; line-height: 1.5; }
+.grid h3 { font-family: Arial, Helvetica, sans-serif; font-size: 21px; font-weight: 700; letter-spacing: .2px; margin-top: 22px; }
+.gift { font-size: 16px; line-height: 1.4; padding: 14px 12px; border-color: #555b5c; background: #292d2e; }
+.gift .e { font-size: 25px; }
+.gift .t { font-weight: 600; color: #ffffff; }
+.gift .tag { font-size: 12px; font-weight: 700; color: #f1d69c; }
+.gift .status { font-size: 13px; line-height: 1.35; font-weight: 700; }
+.gift small { font-size: 13px; }
+.gift.taken { opacity: 1; background: #303031; border-color: #6e5555; }
+.gift.taken .t { color: #d7d7d7; }
+.gift.taken .status { color: #ffb8b8; }
+.gift.mine { background: #333027; border-color: #e3c88f; }
+#st { color: #deded8; font-size: 14px; }
+section.card p { font-size: 16px; line-height: 1.55; color: #f2f0ea; }
+#pixkey { display: inline-block; margin: 6px 0 2px; padding: 12px 14px; border: 1px solid #e3c88f; border-radius: 12px; background: #191b1c; color: #ffe0a1 !important; font-size: 22px !important; font-weight: 700; letter-spacing: .5px; }
+#copypix { font-weight: 700; background: #e3c88f; color: #202020; border-color: #e3c88f; }
+#pixstatus { color: #deded8 !important; font-size: 14px !important; }
+@media (max-width: 380px) { .gift { gap: 8px; padding: 12px 9px; } .gift .tag { font-size: 11px; } #pixkey { font-size: 19px !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+<svg viewBox="0 0 200 120" width="220" fill="none" stroke="#f2f0ea" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M30 60 100 10 170 60"/><path d="M45 52v58h110V52"/><rect x="88" y="70" width="24" height="40"/><rect x="58" y="68" width="18" height="18"/><rect x="124" y="68" width="18" height="18"/><path d="M140 30v-16h14v28" stroke="#8fc9bd"/><path d="M100 36c-6-6-14 2-8 8l8 8 8-8c6-6-2-14-8-8z" stroke="#e3c88f"/></svg>
+<div class="sub">★ você está convidado ★</div>
+<h1>Chá de<br>Casa Nova</h1>
+<div class="ribbon">Alexandre &amp; Hellen</div>
+<p class="msg">Oi amigos! É com muita felicidade que convidamos todos vocês para o nosso chá de casa nova.<br><b>Contamos com a sua presença!</b></p>
+<hr>
+<div class="when"><span>22 DE<br>NOV.</span><i></i><span>DOMINGO<br>ÀS 14H</span></div>
+<div class="addr"><b style="font-weight:400;color:var(--chalk)">Igreja Belo Rincão</b><br>R. Ângelo Milani, 44-246 – Rincão, Colombo – PR</div>
+<div class="wave"></div>
+<div style="font-family:'Caveat Brush','Marker Felt',cursive;font-weight:400;font-synthesis:none;font-size:34px;line-height:1.15;letter-spacing:1px">LISTA DE PRESENTES<br><span style="font-family:'Patrick Hand',cursive;font-weight:400;font-size:19px;letter-spacing:0">é só escolher aqui embaixo ↓</span></div>
+<a class="btn" href="#presentes">Ver lista de presentes</a> <a class="btn" id="rsvp" href="https://wa.me/5547989164472?text=Oi%21%20Confirmo%20minha%20presen%C3%A7a%20no%20ch%C3%A1%20de%20casa%20nova%20dia%2022/11%20%C3%A0s%2014h%20%F0%9F%8E%89">Confirmar presença</a>
+</div>
+
+<h2 id="presentes">Lista de Presentes</h2>
+<p class="note">Toque no presente que você quer dar para reservar 💛 Clicou errado? É só tocar de novo para desfazer.</p>
+<div class="grid" id="list">
+<h3>🍽️ Cozinha</h3>
+<a class="gift" data-n="Jogo de panelas" href="#"><span class="e">🍽️</span><span class="t">Jogo de panelas</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Frigideira antiaderente" href="#"><span class="e">🍽️</span><span class="t">Frigideira antiaderente</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Panela de pressão" href="#"><span class="e">🍽️</span><span class="t">Panela de pressão</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Assadeiras" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Assadeiras</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Travessas de vidro" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Travessas de vidro</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Jogo americano" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Jogo americano</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Jogo de pratos" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Jogo de pratos</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Jogo de copos" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Jogo de copos</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Jogo de xícaras" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Jogo de xícaras</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Talheres" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Talheres</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Facas de cozinha" href="#"><span class="e">🍽️</span><span class="t">Facas de cozinha</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Tábua de corte" href="#"><span class="e">🍽️</span><span class="t">Tábua de corte</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Escorredor de louça" href="#"><span class="e">🍽️</span><span class="t">Escorredor de louça</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Escorredor de macarrão" href="#"><span class="e">🍽️</span><span class="t">Escorredor de macarrão</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Escorredor de arroz" href="#"><span class="e">🍽️</span><span class="t">Escorredor de arroz</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Potes com tampa" data-limit="3" href="#"><span class="e">🍽️</span><span class="t">Potes com tampa</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Jarra" href="#"><span class="e">🍽️</span><span class="t">Jarra</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Garrafa térmica" href="#"><span class="e">🍽️</span><span class="t">Garrafa térmica</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Ralador" href="#"><span class="e">🍽️</span><span class="t">Ralador</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Abridor de latas e garrafas" href="#"><span class="e">🍽️</span><span class="t">Abridor de latas e garrafas</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Concha" href="#"><span class="e">🍽️</span><span class="t">Concha</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Escumadeira" href="#"><span class="e">🍽️</span><span class="t">Escumadeira</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Espátula" href="#"><span class="e">🍽️</span><span class="t">Espátula</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Colher de pau ou silicone" href="#"><span class="e">🍽️</span><span class="t">Colher de pau ou silicone</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Pegador de massa" href="#"><span class="e">🍽️</span><span class="t">Pegador de massa</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Pano de prato" data-limit="4" href="#"><span class="e">🍽️</span><span class="t">Pano de prato</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Lixeira para cozinha" href="#"><span class="e">🍽️</span><span class="t">Lixeira para cozinha</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Triturador de alho" href="#"><span class="e">🍽️</span><span class="t">Triturador de alho</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Espremedor de frutas" href="#"><span class="e">🍽️</span><span class="t">Espremedor de frutas</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Descascador de legumes" href="#"><span class="e">🍽️</span><span class="t">Descascador de legumes</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Porta-temperos" href="#"><span class="e">🍽️</span><span class="t">Porta-temperos</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Saleiro e pimenteiro" href="#"><span class="e">🍽️</span><span class="t">Saleiro e pimenteiro</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Organizador de pia" href="#"><span class="e">🍽️</span><span class="t">Organizador de pia</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Escorredor de talheres" href="#"><span class="e">🍽️</span><span class="t">Escorredor de talheres</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Chaleira elétrica" href="#"><span class="e">🍽️</span><span class="t">Chaleira elétrica</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Liquidificador" href="#"><span class="e">🍽️</span><span class="t">Liquidificador</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Batedeira" href="#"><span class="e">🍽️</span><span class="t">Batedeira</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Sanduicheira elétrica" href="#"><span class="e">🍽️</span><span class="t">Sanduicheira elétrica</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Cafeteira elétrica" href="#"><span class="e">🍽️</span><span class="t">Cafeteira elétrica</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Air fryer" href="#"><span class="e">🍽️</span><span class="t">Air fryer</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Jogo de potes herméticos" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Jogo de potes herméticos</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Kit de utensílios de silicone" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Kit de utensílios de silicone</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Jogo de medidores" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Jogo de medidores</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Peneira" href="#"><span class="e">🍽️</span><span class="t">Peneira</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Luva térmica" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Luva térmica</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Descanso de panela" href="#"><span class="e">🍽️</span><span class="t">Descanso de panela</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Tesoura de cozinha" href="#"><span class="e">🍽️</span><span class="t">Tesoura de cozinha</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Forma de gelo" data-limit="2" href="#"><span class="e">🍽️</span><span class="t">Forma de gelo</span><span class="tag">escolher</span></a>
+<h3>🛏️ Quarto</h3>
+<a class="gift" data-n="Jogo de cama" data-limit="2" href="#"><span class="e">🛏️</span><span class="t">Jogo de cama</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Segundo jogo de cama" href="#"><span class="e">🛏️</span><span class="t">Segundo jogo de cama</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Lençóis" data-limit="3" href="#"><span class="e">🛏️</span><span class="t">Lençóis</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Fronhas" data-limit="4" href="#"><span class="e">🛏️</span><span class="t">Fronhas</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Protetor de colchão" href="#"><span class="e">🛏️</span><span class="t">Protetor de colchão</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Travesseiros" data-limit="4" href="#"><span class="e">🛏️</span><span class="t">Travesseiros</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Protetores de travesseiro" data-limit="2" href="#"><span class="e">🛏️</span><span class="t">Protetores de travesseiro</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Cabides" data-limit="2" href="#"><span class="e">🛏️</span><span class="t">Cabides</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Cortina para o quarto" href="#"><span class="e">🛏️</span><span class="t">Cortina para o quarto</span><span class="tag">escolher</span></a>
+<h3>🚿 Banheiro</h3>
+<a class="gift" data-n="Toalhas de banho" data-limit="4" href="#"><span class="e">🚿</span><span class="t">Toalhas de banho</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Toalhas de rosto" data-limit="4" href="#"><span class="e">🚿</span><span class="t">Toalhas de rosto</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Tapete de banheiro" data-limit="2" href="#"><span class="e">🚿</span><span class="t">Tapete de banheiro</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Porta-sabonete" href="#"><span class="e">🚿</span><span class="t">Porta-sabonete</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Porta-escovas de dentes" href="#"><span class="e">🚿</span><span class="t">Porta-escovas de dentes</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Lixeira para banheiro" href="#"><span class="e">🚿</span><span class="t">Lixeira para banheiro</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Escova sanitária" href="#"><span class="e">🚿</span><span class="t">Escova sanitária</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Kit de acessórios para banheiro" href="#"><span class="e">🚿</span><span class="t">Kit de acessórios para banheiro</span><span class="tag">escolher</span></a>
+<h3>🧺 Área de serviço</h3>
+<a class="gift" data-n="Cesto de roupa suja" href="#"><span class="e">🧺</span><span class="t">Cesto de roupa suja</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Cesto para roupas limpas" href="#"><span class="e">🧺</span><span class="t">Cesto para roupas limpas</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Bacia" href="#"><span class="e">🧺</span><span class="t">Bacia</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Prendedores de roupa" data-limit="2" href="#"><span class="e">🧺</span><span class="t">Prendedores de roupa</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Varal" href="#"><span class="e">🧺</span><span class="t">Varal</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Pano de chão" href="#"><span class="e">🧺</span><span class="t">Pano de chão</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Balde" href="#"><span class="e">🧺</span><span class="t">Balde</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Vassoura" href="#"><span class="e">🧺</span><span class="t">Vassoura</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Rodo" href="#"><span class="e">🧺</span><span class="t">Rodo</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Pá de lixo" href="#"><span class="e">🧺</span><span class="t">Pá de lixo</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Mop giratório" href="#"><span class="e">🧺</span><span class="t">Mop giratório</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Panos multiuso" data-limit="4" href="#"><span class="e">🧺</span><span class="t">Panos multiuso</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Escovas de limpeza" data-limit="2" href="#"><span class="e">🧺</span><span class="t">Escovas de limpeza</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Ferro de passar roupa" href="#"><span class="e">🧺</span><span class="t">Ferro de passar roupa</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Tábua de passar roupa" href="#"><span class="e">🧺</span><span class="t">Tábua de passar roupa</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Organizador de produtos de limpeza" href="#"><span class="e">🧺</span><span class="t">Organizador de produtos de limpeza</span><span class="tag">escolher</span></a>
+<h3>🛋️ Sala</h3>
+<a class="gift" data-n="Tapete de sala" href="#"><span class="e">🛋️</span><span class="t">Tapete de sala</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Cortina para a sala" href="#"><span class="e">🛋️</span><span class="t">Cortina para a sala</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Kit de almofadas" data-limit="2" href="#"><span class="e">🛋️</span><span class="t">Kit de almofadas</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Luminária decorativa" href="#"><span class="e">🛋️</span><span class="t">Luminária decorativa</span><span class="tag">escolher</span></a>
+<a class="gift" data-n="Capacho para a entrada" href="#"><span class="e">🛋️</span><span class="t">Capacho para a entrada</span><span class="tag">escolher</span></a>
+</div>
+<div id="st"></div>
+<section class="card" style="margin-top:28px;padding:22px 18px">
+  <h2 style="margin-top:0">💛 Presente via Pix</h2>
+  <p>Se preferir, você também pode contribuir com qualquer valor para ajudar a montar nosso lar. Você pode contribuir com qualquer valor para ajudar a montar nosso lar. 🏡</p>
+  <p style="color:var(--mint);margin-bottom:6px">Chave Pix:</p>
+  <div id="pixkey" style="overflow-wrap:anywhere;color:var(--gold);font-size:20px">12549311981</div>
+  <button class="btn" id="copypix" type="button">Copiar chave Pix</button>
+  <p id="pixstatus" style="font-size:15px;color:var(--dim);margin-bottom:0">Você pode contribuir com qualquer valor. 💛</p>
+</section>
+</div>
+
+<dialog id="dlg">
+<div id="dq"></div>
+<input id="nm" placeholder="Seu nome" maxlength="40" autocomplete="name">
+<div style="font-size:16px;color:#9a9a94">Enviar no WhatsApp para:</div>
+<div class="row" style="margin-top:8px;flex-wrap:wrap"><button class="btn" id="sh" style="margin:0;border-color:#e3c88f;color:#e3c88f">Hellen</button><button class="btn" id="sa" style="margin:0;border-color:#e3c88f;color:#e3c88f">Alexandre</button><button class="btn" id="no" style="margin:0">Cancelar</button></div>
+</dialog>
+
+<dialog id="dg">
+<div id="dgq" style="font-size:20px"></div>
+<div class="row" style="margin-top:14px"><button class="btn" id="dgok" style="margin:0;border-color:#e3c88f;color:#e3c88f">Confirmar</button><button class="btn" id="dgno" style="margin:0">Cancelar</button></div>
+</dialog>
+
+<script>
+// ===== CONFIGURAÇÃO DO FIREBASE =====
+// Cole aqui a URL do seu Realtime Database (sem barra no final), ex.:
+// "https://casa-nova-alexandre-hellen-default-rtdb.firebaseio.com"
+const DB_URL="https://chacasanova-38d50-default-rtdb.firebaseio.com";
+// =====================================
+const NUM={h:"5547989164472",a:"5541988261312"};
+const dlg=document.getElementById('dlg'),nm=document.getElementById('nm'),dq=document.getElementById('dq');
+let msg=null,pre=null;
+const key=n=>n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const getMine=()=>{try{return JSON.parse(localStorage.getItem('mine')||'[]')}catch(e){return[]}};
+const setMine=a=>{try{localStorage.setItem('mine',JSON.stringify(a))}catch(e){}};
+const db=async(path,opt)=>{const r=await fetch(DB_URL+path+'.json',opt);if(!r.ok)throw new Error(r.status);return r.json()};
+async function refresh(){
+ if(!DB_URL)return;
+ let g={};
+ try{g=await db('/gifts')||{}}
+ catch(e){
+   document.querySelectorAll('.gift').forEach(a=>{
+     let st=a.querySelector('.status');
+     if(!st){st=document.createElement('small');st.className='status';a.querySelector('.t').appendChild(st)}
+     st.textContent='Status indisponível';
+   });
+   return;
+ }
+ const mine=getMine();
+ const dg=document.getElementById('dg'),dgq=document.getElementById('dgq');let dgfn=null;
+ const confirmGift=(q,fn)=>{dgq.textContent=q;dgfn=fn;dg.showModal()};
+ document.getElementById('dgno').onclick=()=>dg.close();
+ document.getElementById('dgok').onclick=async()=>{dg.close();if(dgfn)await dgfn()};
+ const countReservations=raw=>!raw?0:(Array.isArray(raw)?raw.length:(typeof raw==='object'?Object.keys(raw).length:1));
+ document.querySelectorAll('.gift').forEach(a=>{
+   const n=a.dataset.n,k=key(n),limit=Math.max(1,parseInt(a.dataset.limit||'1',10));
+   let st=a.querySelector('.status');
+   if(!st){st=document.createElement('small');st.className='status';a.querySelector('.t').appendChild(st)}
+   a.classList.remove('taken','mine');
+   const count=countReservations(g[k]);
+   if(mine.includes(k)){
+     a.classList.add('mine');st.textContent='✓ Você selecionou este presente';a.querySelector('.tag').textContent='selecionado';
+   }else if(count>=limit){
+     a.classList.add('taken');st.textContent='✓ Limite atingido ('+count+'/'+limit+')';a.querySelector('.tag').textContent='esgotado';
+   }else{
+     st.textContent='Disponível ('+count+'/'+limit+')';a.querySelector('.tag').textContent='escolher';
+   }
+   if(a.dataset.bound==='1')return;
+   a.dataset.bound='1';
+   a.addEventListener('click',e=>{
+     e.preventDefault();
+     if(a.classList.contains('taken')&&!a.classList.contains('mine')){alert('Esse presente já atingiu o limite de reservas 💛 Escolha outro, por favor!');return}
+     if(a.classList.contains('mine')){
+       confirmGift('Desfazer sua escolha de "'+n+'"?',async()=>{
+         try{
+           const latest=await db('/gifts/'+k);
+           if(latest && typeof latest==='object' && !Array.isArray(latest)){
+             const ids=Object.keys(latest);
+             if(ids.length>1) await db('/gifts/'+k+'/'+ids[ids.length-1],{method:'DELETE'});
+             else await db('/gifts/'+k,{method:'DELETE'});
+           }else await db('/gifts/'+k,{method:'DELETE'});
+           setMine(getMine().filter(x=>x!==k));
+         }catch(err){alert('Não consegui desfazer agora. Tente de novo.')}
+         refresh()
+       });
+       return;
+     }
+     confirmGift('Você vai nos presentear com: '+n+'?',async()=>{
+       try{
+         const latest=await db('/gifts/'+k);
+         if(countReservations(latest)>=limit){alert('Esse presente acabou de atingir o limite de reservas 😅 Escolha outro, por favor!');refresh();return}
+         const token=Math.random().toString(36).slice(2)+Date.now().toString(36);
+         await db('/gifts/'+k+'/'+token,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'reservado',at:Date.now()})});
+         setMine(getMine().concat(k));alert('Pronto! Reservamos "'+n+'" para você 💛 Obrigado!');
+       }catch(err){alert('Não foi possível reservar agora. Tente de novo.')}
+       refresh()
+     });
+   });
+ });
+ document.getElementById('rsvp').onclick=e=>{e.preventDefault();
+  ask('Confirmar presença no chá de casa nova?',n=>"Oi! Aqui é "+n+". Confirmo minha presença no chá de casa nova dia 22/11 às 14h 🎉",
+   async name=>{if(DB_URL){try{await db('/rsvp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(name)})}catch(e){}}return true})};
+ document.getElementById('no').onclick=()=>dlg.close();
+ const send=async k=>{const v=nm.value.trim();if(!v){nm.focus();return}
+  if(pre&&!(await pre(v)))return;
+  location.href="https://wa.me/"+NUM[k]+"?text="+encodeURIComponent(msg(v))};
+ document.getElementById('sh').onclick=()=>send('h');
+ document.getElementById('sa').onclick=()=>send('a');
+}
+const pixButton=document.getElementById('copypix');
+if(pixButton)pixButton.onclick=async()=>{
+ const keyText=document.getElementById('pixkey').textContent.trim();
+ const status=document.getElementById('pixstatus');
+ // Fallback compatível com navegadores Android/iOS quando Clipboard API não está disponível.
+ try{
+   if(navigator.clipboard && window.isSecureContext){
+     await navigator.clipboard.writeText(keyText);
+   }else{
+     const temp=document.createElement('textarea');
+     temp.value=keyText;
+     temp.setAttribute('readonly','');
+     temp.style.position='fixed';
+     temp.style.opacity='0';
+     temp.style.pointerEvents='none';
+     document.body.appendChild(temp);
+     temp.select();
+     temp.setSelectionRange(0,temp.value.length);
+     const copied=document.execCommand('copy');
+     temp.remove();
+     if(!copied) throw new Error('copy failed');
+   }
+   status.textContent='Chave Pix copiada! 💛';
+ }catch(e){
+   status.textContent='Não foi possível copiar automaticamente. Pressione e segure a chave Pix para copiá-la.';
+ }
+};
+refresh();
+</script>
+</body>
+</html>
