@@ -36,6 +36,14 @@ h2{font-family:'Caveat Brush','Marker Felt',cursive;font-weight:400;font-synthes
 .gift .tag{font-size:14px;color:var(--gold);white-space:nowrap}.gift .status{display:block;font-size:14px;color:var(--mint);margin-top:3px}.gift.taken .status{color:#e6a3a3}.gift.mine .status{color:var(--gold)}
 dialog{background:var(--card);color:var(--chalk);border:2px solid var(--gold);border-radius:18px;font:inherit;max-width:340px;width:90%}
 dialog::backdrop{background:#000a}
+
+.rsvp-overlay{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.78);padding:20px;align-items:center;justify-content:center;box-sizing:border-box}
+.rsvp-overlay.is-open{display:flex}
+.rsvp-popup{width:min(100%,360px);background:#26292a;color:#f2f0ea;border:2px solid #e3c88f;border-radius:18px;padding:22px 18px;box-shadow:0 12px 40px #000b;font-family:Arial,Helvetica,sans-serif;text-align:center}
+.rsvp-popup #dq{font-size:19px;font-weight:700;margin-bottom:12px}
+.rsvp-popup input{display:block;min-height:48px}
+.rsvp-popup .row{justify-content:center}
+body.rsvp-open{overflow:hidden}
 input{width:100%;padding:10px;margin:10px 0;border-radius:10px;border:2px solid var(--mint);background:var(--bg);color:var(--chalk);font:inherit;font-size:20px}
 .row{display:flex;gap:8px;justify-content:flex-end}
 #st{text-align:center;color:var(--dim);font-size:16px;margin-top:10px}
@@ -207,12 +215,18 @@ section.card p { font-size: 16px; line-height: 1.55; color: #f2f0ea; }
 </section>
 </div>
 
-<dialog id="dlg">
-<div id="dq"></div>
-<input id="nm" placeholder="Seu nome" maxlength="40" autocomplete="name">
-<div style="font-size:16px;color:#9a9a94">Enviar no WhatsApp para:</div>
-<div class="row" style="margin-top:8px;flex-wrap:wrap"><button class="btn" id="sh" style="margin:0;border-color:#e3c88f;color:#e3c88f">Hellen</button><button class="btn" id="sa" style="margin:0;border-color:#e3c88f;color:#e3c88f">Alexandre</button><button class="btn" id="no" style="margin:0">Cancelar</button></div>
-</dialog>
+<div id="dlg" class="rsvp-overlay" aria-hidden="true">
+  <div class="rsvp-popup" role="dialog" aria-modal="true" aria-labelledby="dq">
+    <div id="dq">Confirme sua presença e informe seu nome:</div>
+    <input id="nm" placeholder="Seu nome" maxlength="40" autocomplete="name">
+    <div style="font-size:16px;color:#9a9a94">Enviar confirmação pelo WhatsApp para:</div>
+    <div class="row" style="margin-top:8px;flex-wrap:wrap">
+      <button class="btn" id="sh" type="button" style="margin:0;border-color:#e3c88f;color:#e3c88f">Hellen</button>
+      <button class="btn" id="sa" type="button" style="margin:0;border-color:#e3c88f;color:#e3c88f">Alexandre</button>
+      <button class="btn" id="no" type="button" style="margin:0">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <dialog id="dg">
 <div id="dgq" style="font-size:20px"></div>
@@ -232,49 +246,63 @@ const key=n=>n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').rep
 const getMine=()=>{try{return JSON.parse(localStorage.getItem('mine')||'[]')}catch(e){return[]}};
 const setMine=a=>{try{localStorage.setItem('mine',JSON.stringify(a))}catch(e){}};
 const db=async(path,opt)=>{const r=await fetch(DB_URL+path+'.json',opt);if(!r.ok)throw new Error(r.status);return r.json()};
-// Fluxo de confirmação de presença: independente do carregamento do Firebase.
-function ask(question, makeMessage, beforeSend){
-  dq.textContent=question;
+// Popup de confirmação feito com HTML/CSS (não depende de <dialog>).
+const rsvpPopup = document.getElementById('dlg');
+function openRsvpPopup(){
+  dq.textContent='Confirme sua presença e informe seu nome:';
   nm.value='';
-  msg=makeMessage;
-  pre=beforeSend||null;
-  if(typeof dlg.showModal==='function'){
-    if(!dlg.open) dlg.showModal();
-  }else{
-    dlg.setAttribute('open','');
-    dlg.style.display='block';
-  }
+  nm.placeholder='Seu nome';
+  rsvpPopup.classList.add('is-open');
+  rsvpPopup.setAttribute('aria-hidden','false');
+  document.body.classList.add('rsvp-open');
+  // O foco é aplicado após a exibição para funcionar melhor em navegadores móveis.
+  setTimeout(()=>nm.focus(),80);
 }
-function closeNameDialog(){
-  if(typeof dlg.close==='function' && dlg.open) dlg.close();
-  else { dlg.removeAttribute('open'); dlg.style.display='none'; }
+function closeRsvpPopup(){
+  rsvpPopup.classList.remove('is-open');
+  rsvpPopup.setAttribute('aria-hidden','true');
+  document.body.classList.remove('rsvp-open');
 }
-const sendRsvp=async who=>{
-  const name=nm.value.trim();
-  if(!name){ nm.focus(); nm.placeholder='Digite seu nome para continuar'; return; }
-  if(pre && !(await pre(name))) return;
-  const text=msg(name);
-  const url='https://wa.me/'+NUM[who]+'?text='+encodeURIComponent(text);
-  closeNameDialog();
-  // Navegação direta após o toque do usuário: compatível com Android e iOS.
-  window.location.assign(url);
-};
 document.getElementById('rsvp').addEventListener('click',e=>{
   e.preventDefault();
-  ask('Confirme sua presença e informe seu nome:',name=>'Oi! Aqui é '+name+'. Confirmo minha presença no chá de casa nova dia 06/12 às 14h 🎉',
-    async name=>{
-      try{
-        if(DB_URL) await db('/rsvp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,at:Date.now()})});
-      }catch(err){
-        // A confirmação pelo WhatsApp continua disponível mesmo se o Firebase falhar.
-      }
-      return true;
-    });
+  openRsvpPopup();
 });
-document.getElementById('no').onclick=closeNameDialog;
-document.getElementById('sh').onclick=()=>sendRsvp('h');
-document.getElementById('sa').onclick=()=>sendRsvp('a');
-nm.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); sendRsvp('h'); } });
+document.getElementById('no').addEventListener('click',closeRsvpPopup);
+rsvpPopup.addEventListener('click',e=>{
+  if(e.target===rsvpPopup) closeRsvpPopup();
+});
+function confirmPresence(who){
+  const name=nm.value.trim();
+  if(!name){
+    nm.placeholder='Digite seu nome para continuar';
+    nm.focus();
+    return;
+  }
+  const message='Oi! Aqui é '+name+'. Confirmo minha presença no chá de casa nova dia 06/12 às 14h 🎉';
+  // Registra no Firebase sem bloquear a abertura do WhatsApp em iOS/Android.
+  try{
+    if(DB_URL){
+      fetch(DB_URL+'/rsvp.json',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:name,at:Date.now()}),
+        keepalive:true
+      }).catch(()=>{});
+    }
+  }catch(err){}
+  const url='https://wa.me/'+NUM[who]+'?text='+encodeURIComponent(message);
+  closeRsvpPopup();
+  // Executado diretamente no toque do botão, evitando bloqueio de popup no Safari/iOS.
+  window.location.href=url;
+}
+document.getElementById('sh').addEventListener('click',()=>confirmPresence('h'));
+document.getElementById('sa').addEventListener('click',()=>confirmPresence('a'));
+nm.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();confirmPresence('h');}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && rsvpPopup.classList.contains('is-open')) closeRsvpPopup();
+});
 
 async function refresh(){
  if(!DB_URL)return;
