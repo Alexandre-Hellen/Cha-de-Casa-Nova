@@ -232,6 +232,50 @@ const key=n=>n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').rep
 const getMine=()=>{try{return JSON.parse(localStorage.getItem('mine')||'[]')}catch(e){return[]}};
 const setMine=a=>{try{localStorage.setItem('mine',JSON.stringify(a))}catch(e){}};
 const db=async(path,opt)=>{const r=await fetch(DB_URL+path+'.json',opt);if(!r.ok)throw new Error(r.status);return r.json()};
+// Fluxo de confirmação de presença: independente do carregamento do Firebase.
+function ask(question, makeMessage, beforeSend){
+  dq.textContent=question;
+  nm.value='';
+  msg=makeMessage;
+  pre=beforeSend||null;
+  if(typeof dlg.showModal==='function'){
+    if(!dlg.open) dlg.showModal();
+  }else{
+    dlg.setAttribute('open','');
+    dlg.style.display='block';
+  }
+}
+function closeNameDialog(){
+  if(typeof dlg.close==='function' && dlg.open) dlg.close();
+  else { dlg.removeAttribute('open'); dlg.style.display='none'; }
+}
+const sendRsvp=async who=>{
+  const name=nm.value.trim();
+  if(!name){ nm.focus(); nm.placeholder='Digite seu nome para continuar'; return; }
+  if(pre && !(await pre(name))) return;
+  const text=msg(name);
+  const url='https://wa.me/'+NUM[who]+'?text='+encodeURIComponent(text);
+  closeNameDialog();
+  // Navegação direta após o toque do usuário: compatível com Android e iOS.
+  window.location.assign(url);
+};
+document.getElementById('rsvp').addEventListener('click',e=>{
+  e.preventDefault();
+  ask('Confirme sua presença e informe seu nome:',name=>'Oi! Aqui é '+name+'. Confirmo minha presença no chá de casa nova dia 06/12 às 14h 🎉',
+    async name=>{
+      try{
+        if(DB_URL) await db('/rsvp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,at:Date.now()})});
+      }catch(err){
+        // A confirmação pelo WhatsApp continua disponível mesmo se o Firebase falhar.
+      }
+      return true;
+    });
+});
+document.getElementById('no').onclick=closeNameDialog;
+document.getElementById('sh').onclick=()=>sendRsvp('h');
+document.getElementById('sa').onclick=()=>sendRsvp('a');
+nm.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); sendRsvp('h'); } });
+
 async function refresh(){
  if(!DB_URL)return;
  let g={};
@@ -295,15 +339,6 @@ async function refresh(){
      });
    });
  });
- document.getElementById('rsvp').onclick=e=>{e.preventDefault();
-  ask('Confirmar presença no chá de casa nova?',n=>"Oi! Aqui é "+n+". Confirmo minha presença no chá de casa nova dia 06/12 às 14h 🎉",
-   async name=>{if(DB_URL){try{await db('/rsvp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(name)})}catch(e){}}return true})};
- document.getElementById('no').onclick=()=>dlg.close();
- const send=async k=>{const v=nm.value.trim();if(!v){nm.focus();return}
-  if(pre&&!(await pre(v)))return;
-  location.href="https://wa.me/"+NUM[k]+"?text="+encodeURIComponent(msg(v))};
- document.getElementById('sh').onclick=()=>send('h');
- document.getElementById('sa').onclick=()=>send('a');
 }
 const pixButton=document.getElementById('copypix');
 if(pixButton)pixButton.onclick=async()=>{
