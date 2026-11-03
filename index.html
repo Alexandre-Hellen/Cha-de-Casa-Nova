@@ -37,6 +37,15 @@ h2{font-family:'Caveat Brush','Marker Felt',cursive;font-weight:400;font-synthes
 dialog{background:var(--card);color:var(--chalk);border:2px solid var(--gold);border-radius:18px;font:inherit;max-width:340px;width:90%}
 dialog::backdrop{background:#000a}
 
+
+.gift-basket-bar{position:fixed;z-index:9998;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:436px;margin:0 auto;padding:11px 12px;background:#26292a;border:2px solid var(--gold);border-radius:16px;box-shadow:0 5px 24px #000b;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gift-basket-bar[hidden]{display:none}
+#giftBasketCount{flex:1 1 100%;text-align:center;color:var(--chalk);font-size:17px}
+#giftBasketFinish,#giftBasketClear{border:1px solid var(--gold);border-radius:10px;padding:10px 12px;background:var(--gold);color:#202020;font:inherit;font-weight:bold;cursor:pointer}
+#giftBasketClear{background:transparent;color:var(--chalk)}
+.gift.selected-pending{outline:2px solid var(--gold);background:#39352d}
+.gift.selected-pending .tag{background:var(--gold);color:#202020}
+body{padding-bottom:90px}
 .rsvp-overlay{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.78);padding:20px;align-items:center;justify-content:center;box-sizing:border-box}
 .rsvp-overlay.is-open{display:flex}
 .rsvp-popup{width:min(100%,360px);background:#26292a;color:#f2f0ea;border:2px solid #e3c88f;border-radius:18px;padding:22px 18px;box-shadow:0 12px 40px #000b;font-family:Arial,Helvetica,sans-serif;text-align:center}
@@ -215,6 +224,11 @@ section.card p { font-size: 16px; line-height: 1.55; color: #f2f0ea; }
 </section>
 </div>
 
+<div id="giftBasketBar" class="gift-basket-bar" hidden>
+  <span id="giftBasketCount">0 presentes selecionados</span>
+  <button id="giftBasketFinish" type="button">Reservar selecionados</button>
+  <button id="giftBasketClear" type="button" aria-label="Limpar seleção">Limpar</button>
+</div>
 <div id="dlg" class="rsvp-overlay" aria-hidden="true">
   <div class="rsvp-popup" role="dialog" aria-modal="true" aria-labelledby="dq">
     <div id="dq">Confirme sua presença e informe seu nome:</div>
@@ -304,6 +318,63 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape' && rsvpPopup.classList.contains('is-open')) closeRsvpPopup();
 });
 
+const pendingGifts = new Set();
+const basketBar=document.getElementById('giftBasketBar');
+const basketCount=document.getElementById('giftBasketCount');
+const basketFinish=document.getElementById('giftBasketFinish');
+const basketClear=document.getElementById('giftBasketClear');
+function renderBasket(){
+  const count=pendingGifts.size;
+  basketBar.hidden=count===0;
+  basketCount.textContent=count===1?'1 presente selecionado':count+' presentes selecionados';
+  document.querySelectorAll('.gift').forEach(a=>{
+    const k=key(a.dataset.n);
+    a.classList.toggle('selected-pending',pendingGifts.has(k));
+    if(pendingGifts.has(k))a.querySelector('.tag').textContent='na seleção';
+    else if(!a.classList.contains('mine')&&!a.classList.contains('taken'))a.querySelector('.tag').textContent='escolher';
+  });
+}
+basketClear.addEventListener('click',()=>{
+  pendingGifts.clear();
+  renderBasket();
+});
+basketFinish.addEventListener('click',async()=>{
+  if(!pendingGifts.size)return;
+  const chosen=[...pendingGifts];
+  const names=chosen.map(k=>document.querySelector('.gift[data-n]') && [...document.querySelectorAll('.gift')].find(a=>key(a.dataset.n)===k)?.dataset.n || k);
+  const dg=document.getElementById('dg'),dgq=document.getElementById('dgq');
+  dgq.textContent='Você vai reservar estes presentes? '+names.join(', ');
+  if(!dg.open)dg.showModal();
+  const ok=document.getElementById('dgok'),no=document.getElementById('dgno');
+  const cleanup=()=>{ok.removeEventListener('click',confirm);no.removeEventListener('click',cancel)};
+  const confirm=async()=>{
+    cleanup();dg.close();
+    let success=[],failed=[];
+    for(const k of chosen){
+      try{
+        const card=[...document.querySelectorAll('.gift')].find(a=>key(a.dataset.n)===k);
+        if(!card)continue;
+        const limit=Math.max(1,parseInt(card.dataset.limit||'1',10));
+        const latest=await db('/gifts/'+k);
+        const count=!latest?0:(Array.isArray(latest)?latest.length:(typeof latest==='object'?Object.keys(latest).length:1));
+        if(count>=limit){failed.push(card.dataset.n+' (limite atingido)');continue}
+        const token=Math.random().toString(36).slice(2)+Date.now().toString(36);
+        await db('/gifts/'+k+'/'+token,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'reservado',at:Date.now()})});
+        success.push(k);
+      }catch(err){failed.push(k)}
+    }
+    if(success.length)setMine([...new Set(getMine().concat(success))]);
+    pendingGifts.clear();
+    await refresh();
+    let message='';
+    if(success.length)message='Reservados: '+success.length+' presente(s).';
+    if(failed.length)message+=(message?'\\n':'')+'Não foi possível reservar: '+failed.join(', ')+'.';
+    alert(message||'Nenhum presente foi reservado.');
+  };
+  const cancel=()=>{cleanup();dg.close()};
+  ok.addEventListener('click',confirm);
+  no.addEventListener('click',cancel);
+});
 async function refresh(){
  if(!DB_URL)return;
  let g={};
@@ -317,10 +388,6 @@ async function refresh(){
    return;
  }
  const mine=getMine();
- const dg=document.getElementById('dg'),dgq=document.getElementById('dgq');let dgfn=null;
- const confirmGift=(q,fn)=>{dgq.textContent=q;dgfn=fn;dg.showModal()};
- document.getElementById('dgno').onclick=()=>dg.close();
- document.getElementById('dgok').onclick=async()=>{dg.close();if(dgfn)await dgfn()};
  const countReservations=raw=>!raw?0:(Array.isArray(raw)?raw.length:(typeof raw==='object'?Object.keys(raw).length:1));
  document.querySelectorAll('.gift').forEach(a=>{
    const n=a.dataset.n,k=key(n),limit=Math.max(1,parseInt(a.dataset.limit||'1',10));
@@ -329,45 +396,29 @@ async function refresh(){
    a.classList.remove('taken','mine');
    const count=countReservations(g[k]);
    if(mine.includes(k)){
-     a.classList.add('mine');st.textContent='✓ Você selecionou este presente';a.querySelector('.tag').textContent='selecionado';
+     a.classList.add('mine');st.textContent='✓ Você reservou este presente';a.querySelector('.tag').textContent='reservado';
+     pendingGifts.delete(k);
    }else if(count>=limit){
      a.classList.add('taken');st.textContent='✓ Limite atingido ('+count+'/'+limit+')';a.querySelector('.tag').textContent='esgotado';
+     pendingGifts.delete(k);
    }else{
-     st.textContent='Disponível ('+count+'/'+limit+')';a.querySelector('.tag').textContent='escolher';
+     st.textContent='Disponível ('+count+'/'+limit+')';
+     if(!pendingGifts.has(k))a.querySelector('.tag').textContent='escolher';
    }
    if(a.dataset.bound==='1')return;
    a.dataset.bound='1';
    a.addEventListener('click',e=>{
      e.preventDefault();
-     if(a.classList.contains('taken')&&!a.classList.contains('mine')){alert('Esse presente já atingiu o limite de reservas 💛 Escolha outro, por favor!');return}
-     if(a.classList.contains('mine')){
-       confirmGift('Desfazer sua escolha de "'+n+'"?',async()=>{
-         try{
-           const latest=await db('/gifts/'+k);
-           if(latest && typeof latest==='object' && !Array.isArray(latest)){
-             const ids=Object.keys(latest);
-             if(ids.length>1) await db('/gifts/'+k+'/'+ids[ids.length-1],{method:'DELETE'});
-             else await db('/gifts/'+k,{method:'DELETE'});
-           }else await db('/gifts/'+k,{method:'DELETE'});
-           setMine(getMine().filter(x=>x!==k));
-         }catch(err){alert('Não consegui desfazer agora. Tente de novo.')}
-         refresh()
-       });
-       return;
-     }
-     confirmGift('Você vai nos presentear com: '+n+'?',async()=>{
-       try{
-         const latest=await db('/gifts/'+k);
-         if(countReservations(latest)>=limit){alert('Esse presente acabou de atingir o limite de reservas 😅 Escolha outro, por favor!');refresh();return}
-         const token=Math.random().toString(36).slice(2)+Date.now().toString(36);
-         await db('/gifts/'+k+'/'+token,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'reservado',at:Date.now()})});
-         setMine(getMine().concat(k));alert('Pronto! Reservamos "'+n+'" para você 💛 Obrigado!');
-       }catch(err){alert('Não foi possível reservar agora. Tente de novo.')}
-       refresh()
-     });
+     if(a.classList.contains('mine')){alert('Você já reservou este presente 💛');return}
+     if(a.classList.contains('taken')){alert('Esse presente já atingiu o limite de reservas 💛 Escolha outro, por favor!');return}
+     if(pendingGifts.has(k))pendingGifts.delete(k);
+     else pendingGifts.add(k);
+     renderBasket();
    });
  });
+ renderBasket();
 }
+
 const pixButton=document.getElementById('copypix');
 if(pixButton)pixButton.onclick=async()=>{
  const keyText=document.getElementById('pixkey').textContent.trim();
